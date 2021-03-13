@@ -89,7 +89,7 @@ PUBLIC void vAppMain(void)
 
 		vAHI_DioSetOutput(BOARD_LED_PIN, 0);
 
-		for(i=0; i<1000; i++)
+		for(i=0; i<2000; i++)
 		        DBG_vPrintf(TRUE, "Off\n");
 	}
 
