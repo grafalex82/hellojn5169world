@@ -4,6 +4,7 @@ SET(CMAKE_TOOLCHAIN_FILE JN5169.cmake)
 PROJECT(GPSLogger)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
 ENABLE_LANGUAGE(CXX)
+ENABLE_LANGUAGE(ASM)
 
 IF(NOT SDK_PREFIX)
      MESSAGE(FATAL_ERROR "No SDK_PREFIX specified")
@@ -19,8 +20,8 @@ ADD_DEFINITIONS(
 	-DJENNIC_CHIP_FAMILY_JN516x
 	-DJENNIC_CHIP_FAMILY=JN516x
 	-DJN516x=5160
-	-DDEBUG_ZTIMER
 	-DDBG_ENABLE
+	-DEMBEDDED
 )
 
 
@@ -29,10 +30,13 @@ ADD_DEFINITIONS(
 
 SET(ZIGBEE_SRC
 	${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZTimer.c
+	${SDK_PREFIX}/Components/ZigbeeCommon/Source/portasm_JN516x.S
+	${SDK_PREFIX}/Components/ZigbeeCommon/Source/port_JN516x.c
 )
 ADD_LIBRARY(ZigBee STATIC ${ZIGBEE_SRC})
 TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
 	${SDK_PREFIX}/Components/PWRM/Include
+	${SDK_PREFIX}/Components/MicroSpecific/Include
 )
 
 
@@ -44,6 +48,7 @@ INCLUDE_DIRECTORIES(
 	${SDK_PREFIX}/Components/Dbg/Include
 	${SDK_PREFIX}/Components/HardwareAPI/Include
 	${SDK_PREFIX}/Components/ZigbeeCommon/Include
+	${SDK_PREFIX}/Components/MicroSpecific/Include
 )
 
 LINK_DIRECTORIES(
@@ -56,13 +61,14 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -TAppBuildZBPro.ld")
 
 SET(SOURCES
 	HelloWorld.c
+	irq_JN516x.S
 )
 
 ADD_EXECUTABLE(HelloWorld ${SOURCES})
 TARGET_LINK_LIBRARIES(HelloWorld
-	ZigBee	
-
         -Wl,--start-group
+
+	ZigBee	
 
         PWRM_JN516x
 	HardwareApi_JN5169

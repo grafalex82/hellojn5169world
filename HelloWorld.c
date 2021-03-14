@@ -2,6 +2,7 @@
 #include "dbg.h"
 #include "dbg_uart.h"
 #include "ZTimer.h"
+#include "portmacro.h"
 
 
 #define BOARD_LED_BIT               (17)
@@ -13,17 +14,21 @@ uint8 blinkTimerHandle;
 
 PUBLIC void blinkFunc(void *pvParam)
 {
-//	static int iteration = 0;
-//	DBG_vPrintf(TRUE, "Blink iteration %d\n", iteration++);
-	DBG_vPrintf(TRUE, "Blink iteration\n");
+	static int iteration = 0;
+	DBG_vPrintf(TRUE, "Blink iteration %d\n", iteration++);
 
 	uint32 currentState = u32AHI_DioReadInput();
 	vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
+
+	ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
 }
 
 PUBLIC void vAppMain(void)
 {
-	ZTIMER_teStatus status;
+	// Initialize the hardware
+        TARGET_INITIALISE();
+        SET_IPL(0);
+        portENABLE_INTERRUPTS();
 
 	// Initialize UART
 	DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
@@ -31,19 +36,10 @@ PUBLIC void vAppMain(void)
 	// Initialize hardware
 	vAHI_DioSetDirection(0, BOARD_LED_CTRL_MASK);
 
-	DBG_vPrintf(TRUE, "GPIO initialized\n");
-
 	// Init and start timers
-	status = ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
-	DBG_vPrintf(TRUE, "eInit status: %d\n", status);
-	DBG_vPrintf(TRUE, "Array size: %d\n", sizeof(timers) / sizeof(ZTIMER_tsTimer));
-	status = ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_PREVENT_SLEEP);
-	DBG_vPrintf(TRUE, "eOpen status: %d\n", status);
-	DBG_vPrintf(TRUE, "Handle: %d\n", blinkTimerHandle);
-	status = ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(100));
-	DBG_vPrintf(TRUE, "eStart status: %d\n", status);
-
-	DBG_vPrintf(TRUE, "Timer initialized\n");
+	ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
+	ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_PREVENT_SLEEP);
+	ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
 
 	while(1)
 	{
