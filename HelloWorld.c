@@ -20,6 +20,11 @@ PUBLIC void vAppMain(void)
 	// Initialize hardware
 	vAHI_DioSetDirection(0, BOARD_LED_CTRL_MASK);
 
+	if (bAHI_WatchdogResetEvent())
+	{
+        	DBG_vPrintf(TRUE, "APP: Watchdog timer has reset device!\n");
+	        DBG_vDumpStack();
+	}   
 
 	while(1)
 	{
@@ -34,6 +39,8 @@ PUBLIC void vAppMain(void)
 
 		for(i=0; i<1000000; i++)
 		        vAHI_DioSetOutput(BOARD_LED_PIN, 0);
+
+		vAHI_WatchdogRestart();
 	}
 }
 
