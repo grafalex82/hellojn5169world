@@ -30,6 +30,7 @@ ADD_DEFINITIONS(
 
 SET(ZIGBEE_SRC
 	${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZTimer.c
+	${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZQueue.c
 	${SDK_PREFIX}/Components/ZigbeeCommon/Source/portasm_JN516x.S
 	${SDK_PREFIX}/Components/ZigbeeCommon/Source/port_JN516x.c
 )
@@ -60,7 +61,7 @@ LINK_DIRECTORIES(
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -TAppBuildZBPro.ld")
 
 SET(SOURCES
-	HelloWorld.c
+	HelloWorld.cpp
 	irq_JN516x.S
 )
 
