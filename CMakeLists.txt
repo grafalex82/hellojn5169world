@@ -61,7 +61,7 @@ LINK_DIRECTORIES(
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -TAppBuildZBPro.ld")
 
 SET(SOURCES
-	HelloWorld.cpp
+	HelloWorld.c
 	irq_JN516x.S
 )
 

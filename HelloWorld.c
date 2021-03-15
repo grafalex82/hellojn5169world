@@ -1,12 +1,9 @@
-extern "C"
-{
 #include "AppHardwareApi.h"
 #include "dbg.h"
 #include "dbg_uart.h"
 #include "ZTimer.h"
 #include "ZQueue.h"
 #include "portmacro.h"
-}
 
 #define BOARD_LED_BIT               (17)
 #define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
@@ -29,17 +26,17 @@ tszQueue queueHandle;
 
 PUBLIC void blinkFunc(void *pvParam)
 {
-	static bool fastBlink = true;
-	static bool enabled = true;
+	static uint8 fastBlink = TRUE;
+	static uint8 enabled = TRUE;
 
 	ButtonPressType value;	
 	if(ZQ_bQueueReceive(&queueHandle, (uint8*)&value))
 	{
 		if(value == BUTTON_SHORT_PRESS)
-			fastBlink = !fastBlink;
+			fastBlink = fastBlink ? FALSE : TRUE;
 
 		if(value == BUTTON_LONG_PRESS)
-			enabled = !enabled;
+			enabled = enabled ? FALSE : TRUE;
 	}
 
 	if(enabled)
@@ -87,7 +84,7 @@ PUBLIC void buttonScanFunc(void *pvParam)
 	}
 }
 
-PUBLIC extern "C" void vISR_SystemController(void)
+PUBLIC void vISR_SystemController(void)
 {
     /* clear pending DIO changed bits by reading register */
     //uint8 u8WakeInt = u8AHI_WakeTimerFiredStatus();
@@ -119,7 +116,7 @@ PUBLIC extern "C" void vISR_SystemController(void)
 }
 
 
-PUBLIC extern "C" void vAppMain(void)
+PUBLIC void vAppMain(void)
 {
 	// Initialize the hardware
         TARGET_INITIALISE();
@@ -153,6 +150,6 @@ PUBLIC extern "C" void vAppMain(void)
 	}
 }
 
-extern "C" void vAppRegisterPWRMCallbacks(void)
+void vAppRegisterPWRMCallbacks(void)
 {
 }
