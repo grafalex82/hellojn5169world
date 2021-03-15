@@ -62,6 +62,8 @@ PUBLIC void buttonScanFunc(void *pvParam)
 	if(btnState)
 	{
 		duration++;
+		DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", duration);
+		ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 	}
 	else
 	{
@@ -73,8 +75,8 @@ PUBLIC void buttonScanFunc(void *pvParam)
 			ZQ_bQueueSend(&queueHandle, (uint8*)&value);
 		}
 
-		// detect long press
-		if(duration > 10)
+		// detect short press
+		else if(duration > 10)
 		{
 			DBG_vPrintf(TRUE, "Button released. Short press detected\n");
 			ButtonPressType value = BUTTON_SHORT_PRESS;
@@ -83,9 +85,39 @@ PUBLIC void buttonScanFunc(void *pvParam)
 
 		duration = 0;
 	}
-
-	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 }
+
+PUBLIC extern "C" void vISR_SystemController(void)
+{
+    /* clear pending DIO changed bits by reading register */
+    //uint8 u8WakeInt = u8AHI_WakeTimerFiredStatus();
+    uint32 u32IOStatus = u32AHI_DioInterruptStatus();
+
+    DBG_vPrintf(TRUE, "In vISR_SystemController\n");
+
+    if(u32IOStatus & BOARD_BTN_PIN)
+    {
+        DBG_vPrintf(TRUE, "Button interrupt\n");
+
+        ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+    }
+#if 0
+    if(u8WakeInt & E_AHI_WAKE_TIMER_MASK_1)
+    {
+        /* wake timer interrupt got us here */
+        DBG_vPrintf(TRUE, "APP: Wake Timer 1 Interrupt\n");
+
+#ifdef SLEEP_ENABLE
+        PWRM_vWakeInterruptCallback();
+#endif
+
+    }
+#ifdef SLEEP_ENABLE
+    vManageWakeUponSysControlISR(eInterruptType);
+#endif
+#endif //0
+}
+
 
 PUBLIC extern "C" void vAppMain(void)
 {
@@ -100,13 +132,15 @@ PUBLIC extern "C" void vAppMain(void)
 	// Initialize hardware
 	vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
 	vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
+	vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
+	vAHI_DioInterruptEnable(BOARD_BTN_PIN, 0);
 
 	// Init and start timers
 	ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
 	ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_PREVENT_SLEEP);
 	ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
 	ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_PREVENT_SLEEP);
-	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+	//ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 
 	// Initialize queue
 	ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);

@@ -45,8 +45,7 @@ PIC_ChannelPriorities:
     .size   PIC_SwVectTable, 64
 PIC_SwVectTable:
     .word vUnclaimedInterrupt               # 0
-#    .word vISR_SystemController             # 1
-    .word vUnclaimedInterrupt               # 1
+    .word vISR_SystemController             # 1
     .word vUnclaimedInterrupt               # 2
     .word vUnclaimedInterrupt               # 3
     .word vUnclaimedInterrupt               # 4
