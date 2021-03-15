@@ -9,7 +9,7 @@ This does not yet cover ZigBee part of the microcontroller.
 
 Basically the code is almost independent of the hardware. I am using a simple schematics based on a cheap EBYTE E75-2G4M10S module.
 
-<TBD>
+![Schematics](Schematics.bmp)
 
 # How to build
 
