@@ -50,6 +50,7 @@ INCLUDE_DIRECTORIES(
 	${SDK_PREFIX}/Components/HardwareAPI/Include
 	${SDK_PREFIX}/Components/ZigbeeCommon/Include
 	${SDK_PREFIX}/Components/MicroSpecific/Include
+	${SDK_PREFIX}/Components/PWRM/Include
 )
 
 LINK_DIRECTORIES(

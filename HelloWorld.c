@@ -47,13 +47,14 @@ PUBLIC void blinkFunc(void *pvParam)
 			DBG_vPrintf(TRUE, "Stop Blinking\n");
 			vAHI_DioSetOutput(BOARD_LED_PIN, 0);
 			enabled = FALSE;
-//			ZTIMER_eStop(buttonScanTimerHandle);
-			return;
 		}
 	}
 
-	uint32 currentState = u32AHI_DioReadInput();
-	vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
+	if(enabled)
+	{
+		uint32 currentState = u32AHI_DioReadInput();
+		vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
+	}
 
 	ZTIMER_eStart(blinkTimerHandle, fastBlink? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
 }
@@ -70,7 +71,6 @@ PUBLIC void buttonScanFunc(void *pvParam)
 	{
 		duration++;
 		DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", duration);
-		ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 	}
 	else
 	{
@@ -92,6 +92,8 @@ PUBLIC void buttonScanFunc(void *pvParam)
 
 		duration = 0;
 	}
+
+	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 }
 
 PUBLIC void vISR_SystemController(void)
@@ -106,7 +108,6 @@ PUBLIC void vISR_SystemController(void)
     {
         DBG_vPrintf(TRUE, "Button interrupt\n");
 	enabled = TRUE;
-        ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 	PWRM_vWakeInterruptCallback();
     }
 
@@ -146,10 +147,7 @@ PUBLIC void vAppMain(void)
 	ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
 	ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
 	ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-	//ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
-
-
-	DBG_vPrintf(TRUE, "Number of activities: %d\n", PWRM_u16GetActivityCount());
+	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 
 	// Initialize queue
 	ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);
@@ -215,9 +213,7 @@ PWRM_CALLBACK(Wakeup)
 
 	// Wake the timers
         ZTIMER_vWake();
-	ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(10));
 }
-
 
 void vAppRegisterPWRMCallbacks(void)
 {
