@@ -22,6 +22,7 @@ ADD_DEFINITIONS(
 	-DJN516x=5160
 	-DDBG_ENABLE
 	-DEMBEDDED
+	-DPDM_NO_RTOS
 )
 
 
@@ -51,6 +52,8 @@ INCLUDE_DIRECTORIES(
 	${SDK_PREFIX}/Components/ZigbeeCommon/Include
 	${SDK_PREFIX}/Components/MicroSpecific/Include
 	${SDK_PREFIX}/Components/PWRM/Include
+	${SDK_PREFIX}/Components/PDM/Include
+	${SDK_PREFIX}/Components/Aes/Include
 )
 
 LINK_DIRECTORIES(
@@ -76,6 +79,8 @@ TARGET_LINK_LIBRARIES(HelloWorld
 	HardwareApi_JN5169
 	DBG_JN516x
 	Boot_JN516x
+        PDM_EEPROM_NO_RTOS_JN516x
+        MicroSpecific_JN516x
 
         -Wl,--end-group
 )
